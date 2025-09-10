@@ -1,0 +1,48 @@
+I have uploaded 2 files: "Project Plan.pdf" and "tools.docx". 
+Please generate a **complete ready-to-run Flask project** for a "College Event Management System" with the following:
+
+1. **Frontend (HTML + CSS + Bootstrap)**:
+   - Homepage → Options: Admin Login / Student Registration.
+   - Student Registration Form (fields: Name, USN [must start with "1KS"], Year, Semester, Phone, Email).
+     * On submit → Save details to database + generate unique ticket code.
+   - Event List Page → Display all events with details.
+   - Admin Dashboard → 
+     * Admin login (secure, hashed password).
+     * Add/Edit/Delete Events.
+     * View Student Registrations.
+     * Mark Attendance using ticket code.
+   - Event Timetable page → List of events with date, time, venue.
+
+2. **Backend (Flask in Python)**:
+   - Routes:
+     * `/` → Homepage
+     * `/register` → Student registration
+     * `/events` → Event list
+     * `/admin` → Admin login + dashboard
+     * `/attendance` → Attendance by ticket code
+   - USN validation (must start with "1KS").
+   - Generate unique ticket code (UUID/QR).
+   - Store ticket code in DB + simulate blockchain (hashing).
+   - Mock SMS sending (print ticket code in console/log instead of real SMS).
+
+3. **Database (use SQLite for Replit)**:
+   - Tables:
+     * `students(id, name, usn, year, semester, phone, email)`
+     * `events(id, name, description, rules, prize, date, time, venue, lead_name, lead_phone)`
+     * `registrations(id, student_id, event_id, ticket_code)`
+     * `attendance(id, registration_id, status)`
+   - SQLite is local and works on Replit (no need for XAMPP).
+
+4. **Extra Features**:
+   - Ticket validation before marking attendance.
+   - Responsive Bootstrap UI.
+   - Secure sessions for Admin login.
+
+5. **Project Structure**:
+   - `app.py` → Flask backend
+   - `templates/` → HTML files
+   - `static/` → CSS/Bootstrap
+   - `database.db` → SQLite database
+   - `requirements.txt` → Flask + dependencies
+
+⚡ Deliver the full code with all necessary files so I can just click "Run" on Replit and test everything in real-time.
