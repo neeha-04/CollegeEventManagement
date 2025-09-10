@@ -32,8 +32,71 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 # Initialize the app with the extension
 db.init_app(app)
 
-# Import models after db initialization
-from models import Student, Event, Registration, Attendance, Admin
+# Define models inline to avoid import issues
+class Student(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    usn = db.Column(db.String(20), unique=True, nullable=False)
+    year = db.Column(db.String(10), nullable=False)
+    semester = db.Column(db.String(10), nullable=False)
+    phone = db.Column(db.String(15), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Student {self.name} - {self.usn}>'
+
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    rules = db.Column(db.Text, nullable=False)
+    prize = db.Column(db.String(100), nullable=False)
+    date = db.Column(db.String(20), nullable=False)
+    time = db.Column(db.String(20), nullable=False)
+    venue = db.Column(db.String(200), nullable=False)
+    lead_name = db.Column(db.String(100), nullable=False)
+    lead_phone = db.Column(db.String(15), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Event {self.name}>'
+
+class Registration(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
+    ticket_code = db.Column(db.String(20), unique=True, nullable=False)
+    blockchain_hash = db.Column(db.String(64), nullable=False)
+    registered_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    student = db.relationship('Student', backref=db.backref('registrations', lazy=True))
+    event = db.relationship('Event', backref=db.backref('registrations', lazy=True))
+
+    def __repr__(self):
+        return f'<Registration {self.ticket_code}>'
+
+class Attendance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    registration_id = db.Column(db.Integer, db.ForeignKey('registration.id'), nullable=False)
+    status = db.Column(db.String(20), default='Present')
+    marked_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    registration = db.relationship('Registration', backref=db.backref('attendance', lazy=True))
+
+    def __repr__(self):
+        return f'<Attendance {self.status}>'
+
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Admin {self.username}>'
 
 with app.app_context():
     db.create_all()
@@ -66,12 +129,19 @@ def index():
 def student_register():
     if request.method == 'POST':
         name = request.form.get('name')
-        usn = request.form.get('usn').upper()
+        usn_raw = request.form.get('usn')
         year = request.form.get('year')
         semester = request.form.get('semester')
         phone = request.form.get('phone')
         email = request.form.get('email')
         event_id = request.form.get('event_id')
+        
+        # Validate required fields
+        if not all([name, usn_raw, year, semester, phone, email, event_id]):
+            flash('All fields are required!', 'error')
+            return render_template('student_register.html', events=Event.query.all())
+        
+        usn = usn_raw.upper()
         
         # Validate USN format
         if not usn.startswith('1KS'):
@@ -81,7 +151,14 @@ def student_register():
         # Check if student already exists
         student = Student.query.filter_by(usn=usn).first()
         if not student:
-            student = Student(name=name, usn=usn, year=year, semester=semester, phone=phone, email=email)
+            student = Student(
+                name=name, 
+                usn=usn, 
+                year=year, 
+                semester=semester, 
+                phone=phone, 
+                email=email
+            )
             db.session.add(student)
             db.session.commit()
         
@@ -100,7 +177,7 @@ def student_register():
         # Create registration
         registration = Registration(
             student_id=student.id,
-            event_id=event_id,
+            event_id=int(event_id),
             ticket_code=ticket_code,
             blockchain_hash=blockchain_hash
         )
@@ -131,6 +208,10 @@ def admin_login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        
+        if not username or not password:
+            flash('Username and password are required!', 'error')
+            return render_template('admin_login.html')
         
         admin = Admin.query.filter_by(username=username).first()
         
@@ -187,6 +268,11 @@ def add_event():
         lead_name = request.form.get('lead_name')
         lead_phone = request.form.get('lead_phone')
         
+        # Validate required fields
+        if not all([name, description, rules, prize, date, time, venue, lead_name, lead_phone]):
+            flash('All fields are required!', 'error')
+            return render_template('add_event.html')
+        
         event = Event(
             name=name,
             description=description,
@@ -225,7 +311,13 @@ def mark_attendance():
         return redirect(url_for('admin_login'))
     
     if request.method == 'POST':
-        ticket_code = request.form.get('ticket_code').upper()
+        ticket_code_raw = request.form.get('ticket_code')
+        
+        if not ticket_code_raw:
+            flash('Ticket code is required!', 'error')
+            return render_template('attendance.html')
+        
+        ticket_code = ticket_code_raw.upper()
         
         registration = Registration.query.filter_by(ticket_code=ticket_code).first()
         
@@ -252,7 +344,10 @@ def mark_attendance():
         student = Student.query.get(registration.student_id)
         event = Event.query.get(registration.event_id)
         
-        flash(f'Attendance marked for {student.name} (USN: {student.usn}) for event: {event.name}', 'success')
+        if student and event:
+            flash(f'Attendance marked for {student.name} (USN: {student.usn}) for event: {event.name}', 'success')
+        else:
+            flash('Attendance marked successfully!', 'success')
         return render_template('attendance.html')
     
     return render_template('attendance.html')
