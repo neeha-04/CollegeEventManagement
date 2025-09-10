@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Event Registrations - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>
+            <i data-feather="users" class="me-2"></i>
+            Registrations for {{ event.name }}
+        </h2>
+        <p class="text-muted mb-0">{{ event.date }} at {{ event.time }} • {{ event.venue }}</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <i data-feather="arrow-left" class="me-2"></i>
+        Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i data-feather="list" class="me-2"></i>
+            Registered Students ({{ registrations|length }})
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if registrations %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student Name</th>
+                        <th>USN</th>
+                        <th>Year/Semester</th>
+                        <th>Contact</th>
+                        <th>Ticket Code</th>
+                        <th>Registration Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for registration, student in registrations %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <strong>{{ student.name }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ student.usn }}</span>
+                        </td>
+                        <td>{{ student.year }} - {{ student.semester }}</td>
+                        <td>
+                            <div>
+                                <i data-feather="phone" width="14" height="14" class="me-1"></i>
+                                {{ student.phone }}
+                            </div>
+                            <div>
+                                <i data-feather="mail" width="14" height="14" class="me-1"></i>
+                                <small class="text-muted">{{ student.email }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <code class="text-info">{{ registration.ticket_code }}</code>
+                        </td>
+                        <td>
+                            <small>{{ registration.registered_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </td>
+                        <td>
+                            {% if registration.attendance %}
+                            <span class="badge bg-success">
+                                <i data-feather="check" width="14" height="14" class="me-1"></i>
+                                Present
+                            </span>
+                            <br>
+                            <small class="text-muted">{{ registration.attendance[0].marked_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            {% else %}
+                            <span class="badge bg-warning">
+                                <i data-feather="clock" width="14" height="14" class="me-1"></i>
+                                Registered
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i data-feather="user-x" width="64" height="64" class="text-muted mb-3"></i>
+            <h5 class="text-muted">No Registrations Yet</h5>
+            <p class="text-muted">Students haven't registered for this event yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if registrations %}
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="users" width="40" height="40" class="text-primary mb-2"></i>
+                <h4>{{ registrations|length }}</h4>
+                <p class="text-muted mb-0">Total Registrations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="check-circle" width="40" height="40" class="text-success mb-2"></i>
+                <h4>{{ registrations | selectattr('0.attendance') | list | length }}</h4>
+                <p class="text-muted mb-0">Attended</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="clock" width="40" height="40" class="text-warning mb-2"></i>
+                <h4>{{ registrations | rejectattr('0.attendance') | list | length }}</h4>
+                <p class="text-muted mb-0">Pending</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

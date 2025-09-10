@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-3">
+                <i data-feather="award" class="me-3"></i>
+                College Event Management System
+            </h1>
+            <p class="lead">Manage college events with blockchain-secured ticketing</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 border-primary">
+                    <div class="card-body text-center p-5">
+                        <div class="mb-4">
+                            <i data-feather="user-plus" width="64" height="64" class="text-primary"></i>
+                        </div>
+                        <h3 class="card-title mb-3">Student Registration</h3>
+                        <p class="card-text mb-4">
+                            Register for college events with your valid USN (starting with "1KS"). 
+                            Get secure ticket codes via SMS for event attendance.
+                        </p>
+                        <a href="{{ url_for('student_register') }}" class="btn btn-primary btn-lg">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Register for Events
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 border-info">
+                    <div class="card-body text-center p-5">
+                        <div class="mb-4">
+                            <i data-feather="shield" width="64" height="64" class="text-info"></i>
+                        </div>
+                        <h3 class="card-title mb-3">Admin Portal</h3>
+                        <p class="card-text mb-4">
+                            Event managers can add new events, view registrations, 
+                            and mark attendance using secure blockchain-verified tickets.
+                        </p>
+                        <a href="{{ url_for('admin_login') }}" class="btn btn-outline-info btn-lg">
+                            <i data-feather="log-in" class="me-2"></i>
+                            Admin Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-4 text-center">
+                <div class="feature-item mb-4">
+                    <i data-feather="lock" width="48" height="48" class="text-success mb-3"></i>
+                    <h5>Blockchain Security</h5>
+                    <p class="text-muted">All tickets are secured with blockchain technology for tamper-proof verification</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="feature-item mb-4">
+                    <i data-feather="smartphone" width="48" height="48" class="text-warning mb-3"></i>
+                    <h5>SMS Notifications</h5>
+                    <p class="text-muted">Instant SMS delivery of unique ticket codes for easy attendance verification</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="feature-item mb-4">
+                    <i data-feather="users" width="48" height="48" class="text-info mb-3"></i>
+                    <h5>Easy Management</h5>
+                    <p class="text-muted">Comprehensive admin dashboard for complete event and attendance management</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - College Events{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i data-feather="grid" class="me-2"></i>
+        Admin Dashboard
+    </h2>
+    <a href="{{ url_for('add_event') }}" class="btn btn-primary">
+        <i data-feather="plus" class="me-2"></i>
+        Add New Event
+    </a>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="users" width="40" height="40" class="text-primary mb-2"></i>
+                <h3 class="card-title">{{ stats.total_students }}</h3>
+                <p class="card-text text-muted">Total Students</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="calendar" width="40" height="40" class="text-success mb-2"></i>
+                <h3 class="card-title">{{ stats.total_events }}</h3>
+                <p class="card-text text-muted">Total Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="user-check" width="40" height="40" class="text-info mb-2"></i>
+                <h3 class="card-title">{{ stats.total_registrations }}</h3>
+                <p class="card-text text-muted">Total Registrations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <a href="{{ url_for('mark_attendance') }}" class="btn btn-outline-warning">
+                    <i data-feather="check-circle" class="me-2"></i>
+                    Mark Attendance
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Events Management -->
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title mb-0">
+            <i data-feather="list" class="me-2"></i>
+            Event Management
+        </h4>
+    </div>
+    <div class="card-body">
+        {% if events %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Venue</th>
+                        <th>Lead</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>
+                            <strong>{{ event.name }}</strong><br>
+                            <small class="text-muted">Prize: {{ event.prize }}</small>
+                        </td>
+                        <td>{{ event.date }}</td>
+                        <td>{{ event.time }}</td>
+                        <td>{{ event.venue }}</td>
+                        <td>
+                            {{ event.lead_name }}<br>
+                            <small class="text-muted">{{ event.lead_phone }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('event_registrations', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i data-feather="users"></i>
+                                    Registrations
+                                </a>
+                                <a href="{{ url_for('delete_event', event_id=event.id) }}" class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('Are you sure you want to delete this event?')">
+                                    <i data-feather="trash-2"></i>
+                                    Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i data-feather="calendar-x" width="64" height="64" class="text-muted mb-3"></i>
+            <h5 class="text-muted">No Events Created</h5>
+            <p class="text-muted">Start by creating your first event!</p>
+            <a href="{{ url_for('add_event') }}" class="btn btn-primary">
+                <i data-feather="plus" class="me-2"></i>
+                Add New Event
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

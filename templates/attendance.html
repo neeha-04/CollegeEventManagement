@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - College Events{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">
+                    <i data-feather="check-circle" class="me-2"></i>
+                    Mark Attendance
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="ticket_code" class="form-label">Ticket Code</label>
+                        <input type="text" class="form-control form-control-lg" id="ticket_code" name="ticket_code" 
+                               placeholder="Enter student's ticket code" required autofocus>
+                        <div class="form-text">Enter the unique ticket code from the student's SMS</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="check-circle" class="me-2"></i>
+                            Verify & Mark Attendance
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4" role="alert">
+            <h6 class="alert-heading">
+                <i data-feather="info" class="me-2"></i>
+                How to Mark Attendance
+            </h6>
+            <ol class="mb-0">
+                <li>Ask the student to show their SMS with the ticket code</li>
+                <li>Enter the ticket code in the field above</li>
+                <li>Click "Verify & Mark Attendance"</li>
+                <li>The system will verify the ticket against blockchain records</li>
+                <li>If valid, attendance will be marked as "Present"</li>
+            </ol>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="shield" class="me-2"></i>
+                    Security Features
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i data-feather="lock" class="text-success me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Blockchain Verification</h6>
+                                <small class="text-muted">Each ticket is verified against blockchain records</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i data-feather="repeat" class="text-warning me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Duplicate Prevention</h6>
+                                <small class="text-muted">Same ticket cannot be used twice</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i data-feather="key" class="text-info me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Unique Codes</h6>
+                                <small class="text-muted">Each ticket has a unique 8-character code</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i data-feather="clock" class="text-primary me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Real-time Verification</h6>
+                                <small class="text-muted">Instant validation and attendance marking</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

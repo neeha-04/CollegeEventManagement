@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Student Registration - College Events{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">
+                    <i data-feather="user-plus" class="me-2"></i>
+                    Student Registration
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="usn" class="form-label">USN</label>
+                            <input type="text" class="form-control" id="usn" name="usn" placeholder="Must start with 1KS" required>
+                            <div class="form-text">USN must start with "1KS"</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="year" class="form-label">Year</label>
+                            <select class="form-select" id="year" name="year" required>
+                                <option value="">Select Year</option>
+                                <option value="1st">1st Year</option>
+                                <option value="2nd">2nd Year</option>
+                                <option value="3rd">3rd Year</option>
+                                <option value="4th">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="semester" class="form-label">Semester</label>
+                            <select class="form-select" id="semester" name="semester" required>
+                                <option value="">Select Semester</option>
+                                <option value="1st">1st Semester</option>
+                                <option value="2nd">2nd Semester</option>
+                                <option value="3rd">3rd Semester</option>
+                                <option value="4th">4th Semester</option>
+                                <option value="5th">5th Semester</option>
+                                <option value="6th">6th Semester</option>
+                                <option value="7th">7th Semester</option>
+                                <option value="8th">8th Semester</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="event_id" class="form-label">Select Event</label>
+                        <select class="form-select" id="event_id" name="event_id" required>
+                            <option value="">Choose an event</option>
+                            {% for event in events %}
+                            <option value="{{ event.id }}">{{ event.name }} - {{ event.date }} at {{ event.venue }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="check-circle" class="me-2"></i>
+                            Register for Event
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4" role="alert">
+            <h6 class="alert-heading">
+                <i data-feather="info" class="me-2"></i>
+                Important Information
+            </h6>
+            <ul class="mb-0">
+                <li>Only students with USN starting with "1KS" are allowed to register</li>
+                <li>You will receive a unique ticket code via SMS upon successful registration</li>
+                <li>Keep your ticket code safe - you'll need it for event attendance</li>
+                <li>Each student can register only once per event</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
