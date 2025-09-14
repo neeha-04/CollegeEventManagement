@@ -52,6 +52,7 @@ class Event(db.Model):
     description = db.Column(db.Text, nullable=False)
     rules = db.Column(db.Text, nullable=False)
     prize = db.Column(db.String(100), nullable=False)
+    registration_fee = db.Column(db.Float, nullable=False, default=0.0)
     date = db.Column(db.String(20), nullable=False)
     time = db.Column(db.String(20), nullable=False)
     venue = db.Column(db.String(200), nullable=False)
@@ -62,17 +63,33 @@ class Event(db.Model):
     def __repr__(self):
         return f'<Event {self.name}>'
 
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    payment_method = db.Column(db.String(20), nullable=False)  # 'online' or 'cash'
+    transaction_id = db.Column(db.String(100))  # For online payments
+    amount = db.Column(db.Float, nullable=False)
+    payment_status = db.Column(db.String(20), default='pending')  # 'pending', 'verified', 'failed'
+    payment_date = db.Column(db.DateTime, default=datetime.utcnow)
+    verified_by_admin = db.Column(db.Integer, db.ForeignKey('admin.id'))
+    verified_at = db.Column(db.DateTime)
+    
+    def __repr__(self):
+        return f'<Payment {self.payment_method} - {self.payment_status}>'
+
 class Registration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
     ticket_code = db.Column(db.String(20), unique=True, nullable=False)
     blockchain_hash = db.Column(db.String(64), nullable=False)
+    registration_status = db.Column(db.String(20), default='pending')  # 'pending', 'confirmed', 'cancelled'
     registered_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
     student = db.relationship('Student', backref=db.backref('registrations', lazy=True))
     event = db.relationship('Event', backref=db.backref('registrations', lazy=True))
+    payment = db.relationship('Payment', backref=db.backref('registration', uselist=False, lazy=True))
 
     def __repr__(self):
         return f'<Registration {self.ticket_code}>'
