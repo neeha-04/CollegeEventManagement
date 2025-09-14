@@ -434,7 +434,11 @@ def admin_payments():
         return redirect(url_for('admin_login'))
     
     # Get all pending cash payments
-    pending_payments = db.session.query(Payment, Registration, Student, Event).join(Registration).join(Student).join(Event).filter(Payment.payment_status == 'pending', Payment.payment_method == 'cash').all()
+    pending_payments = db.session.query(Payment, Registration, Student, Event)\
+        .join(Registration, Payment.id == Registration.payment_id)\
+        .join(Student, Registration.student_id == Student.id)\
+        .join(Event, Registration.event_id == Event.id)\
+        .filter(Payment.payment_status == 'pending', Payment.payment_method == 'cash').all()
     
     return render_template('admin_payments.html', pending_payments=pending_payments)
 
