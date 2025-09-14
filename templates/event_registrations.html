@@ -108,12 +108,13 @@
                         </td>
                         <td>
                             {% if payment.payment_status == 'pending' and payment.payment_method == 'cash' %}
-                            <a href="{{ url_for('verify_payment', payment_id=payment.id) }}" 
-                               class="btn btn-sm btn-success"
-                               onclick="return confirm('Confirm cash payment of ₹{{ payment.amount }} received from {{ student.name }}?')">
-                                <i data-feather="check"></i>
-                                Verify
-                            </a>
+                            <form method="POST" action="{{ url_for('verify_payment', payment_id=payment.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success"
+                                        onclick="return confirm('Confirm cash payment of ₹{{ payment.amount }} received from {{ student.name }}?')">
+                                    <i data-feather="check"></i>
+                                    Verify
+                                </button>
+                            </form>
                             {% else %}
                             <span class="text-muted">-</span>
                             {% endif %}

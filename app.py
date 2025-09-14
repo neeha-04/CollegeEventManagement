@@ -19,7 +19,9 @@ db = SQLAlchemy(model_class=Base)
 
 # Create the app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "your-secret-key-here")
+app.secret_key = os.environ.get("SESSION_SECRET")
+if not app.secret_key:
+    raise RuntimeError("SESSION_SECRET environment variable must be set")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Configure the database
@@ -259,7 +261,21 @@ def student_register():
         return redirect(url_for('events'))
     
     events = Event.query.all()
-    return render_template('student_register.html', events=events)
+    # Convert events to dict for JSON serialization in template
+    events_dict = []
+    for event in events:
+        events_dict.append({
+            'id': event.id,
+            'name': event.name,
+            'description': event.description,
+            'registration_fee': event.registration_fee,
+            'lead_name': event.lead_name,
+            'lead_phone': event.lead_phone,
+            'date': event.date,
+            'time': event.time,
+            'venue': event.venue
+        })
+    return render_template('student_register.html', events=events, events_json=events_dict)
 
 @app.route('/events')
 def events():
@@ -380,7 +396,7 @@ def event_registrations(event_id):
     
     return render_template('event_registrations.html', event=event, registrations=registrations)
 
-@app.route('/admin/verify_payment/<int:payment_id>')
+@app.route('/admin/verify_payment/<int:payment_id>', methods=['POST'])
 def verify_payment(payment_id):
     if 'admin_id' not in session:
         flash('Please login to access this page', 'error')

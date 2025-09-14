@@ -67,12 +67,13 @@
                         </td>
                         <td>
                             <div class="btn-group">
-                                <a href="{{ url_for('verify_payment', payment_id=payment.id) }}" 
-                                   class="btn btn-sm btn-success"
-                                   onclick="return confirm('Confirm that you have received cash payment of ₹{{ payment.amount }} from {{ student.name }}?')">
-                                    <i data-feather="check"></i>
-                                    Verify Payment
-                                </a>
+                                <form method="POST" action="{{ url_for('verify_payment', payment_id=payment.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success"
+                                            onclick="return confirm('Confirm that you have received cash payment of ₹{{ payment.amount }} from {{ student.name }}?')">
+                                        <i data-feather="check"></i>
+                                        Verify Payment
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

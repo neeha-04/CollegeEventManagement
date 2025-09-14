@@ -202,7 +202,7 @@ function updateEventFee() {
 
 function updateEventLeadInfo() {
     const eventSelect = document.getElementById('event_id');
-    const events = {{ events | tojson | safe }};
+    const events = {{ events_json | tojson | safe }};
     const selectedEvent = events.find(event => event.id == eventSelect.value);
     
     if (selectedEvent) {
