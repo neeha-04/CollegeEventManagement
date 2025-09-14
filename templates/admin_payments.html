@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Verification - College Events{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i data-feather="dollar-sign" class="me-2"></i>
+        Payment Verification
+    </h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <i data-feather="arrow-left" class="me-2"></i>
+        Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i data-feather="clock" class="me-2"></i>
+            Pending Cash Payments ({{ pending_payments|length }})
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if pending_payments %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student Details</th>
+                        <th>Event</th>
+                        <th>Amount</th>
+                        <th>Payment Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment, registration, student, event in pending_payments %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <strong>{{ student.name }}</strong><br>
+                            <small class="text-muted">USN: {{ student.usn }}</small><br>
+                            <small class="text-muted">
+                                <i data-feather="phone" width="12" height="12" class="me-1"></i>
+                                {{ student.phone }}
+                            </small>
+                        </td>
+                        <td>
+                            <strong>{{ event.name }}</strong><br>
+                            <small class="text-muted">{{ event.date }} at {{ event.time }}</small><br>
+                            <small class="text-muted">{{ event.venue }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary fs-6">₹{{ payment.amount }}</span>
+                        </td>
+                        <td>
+                            {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') }}
+                        </td>
+                        <td>
+                            <span class="badge bg-warning">
+                                <i data-feather="clock" width="12" height="12" class="me-1"></i>
+                                Pending Verification
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ url_for('verify_payment', payment_id=payment.id) }}" 
+                                   class="btn btn-sm btn-success"
+                                   onclick="return confirm('Confirm that you have received cash payment of ₹{{ payment.amount }} from {{ student.name }}?')">
+                                    <i data-feather="check"></i>
+                                    Verify Payment
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i data-feather="check-circle" width="64" height="64" class="text-success mb-3"></i>
+            <h5 class="text-muted">No Pending Cash Payments</h5>
+            <p class="text-muted">All cash payments have been verified!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if pending_payments %}
+<div class="alert alert-info mt-4" role="alert">
+    <h6 class="alert-heading">
+        <i data-feather="info" class="me-2"></i>
+        Payment Verification Guidelines
+    </h6>
+    <ul class="mb-0">
+        <li>Only verify payments after confirming cash receipt from the student</li>
+        <li>Contact the event lead if there are any discrepancies</li>
+        <li>Students will receive SMS notification once payment is verified</li>
+        <li>Verified students can attend the event with their ticket code</li>
+    </ul>
+</div>
+{% endif %}
+{% endblock %}

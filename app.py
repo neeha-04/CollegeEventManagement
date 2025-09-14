@@ -330,6 +330,7 @@ def add_event():
         description = request.form.get('description')
         rules = request.form.get('rules')
         prize = request.form.get('prize')
+        registration_fee = request.form.get('registration_fee')
         date = request.form.get('date')
         time = request.form.get('time')
         venue = request.form.get('venue')
@@ -337,8 +338,14 @@ def add_event():
         lead_phone = request.form.get('lead_phone')
         
         # Validate required fields
-        if not all([name, description, rules, prize, date, time, venue, lead_name, lead_phone]):
+        if not all([name, description, rules, prize, registration_fee is not None, date, time, venue, lead_name, lead_phone]):
             flash('All fields are required!', 'error')
+            return render_template('add_event.html')
+        
+        try:
+            registration_fee = float(registration_fee)
+        except ValueError:
+            flash('Registration fee must be a valid number!', 'error')
             return render_template('add_event.html')
         
         event = Event(
@@ -346,6 +353,7 @@ def add_event():
             description=description,
             rules=rules,
             prize=prize,
+            registration_fee=registration_fee,
             date=date,
             time=time,
             venue=venue,
@@ -368,9 +376,51 @@ def event_registrations(event_id):
         return redirect(url_for('admin_login'))
     
     event = Event.query.get_or_404(event_id)
-    registrations = db.session.query(Registration, Student).join(Student).filter(Registration.event_id == event_id).all()
+    registrations = db.session.query(Registration, Student, Payment).join(Student).join(Payment).filter(Registration.event_id == event_id).all()
     
     return render_template('event_registrations.html', event=event, registrations=registrations)
+
+@app.route('/admin/verify_payment/<int:payment_id>')
+def verify_payment(payment_id):
+    if 'admin_id' not in session:
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('admin_login'))
+    
+    payment = Payment.query.get_or_404(payment_id)
+    registration = Registration.query.filter_by(payment_id=payment.id).first()
+    
+    if not registration:
+        flash('Registration not found for this payment!', 'error')
+        return redirect(url_for('admin_dashboard'))
+    
+    # Verify payment
+    payment.payment_status = 'verified'
+    payment.verified_by_admin = session['admin_id']
+    payment.verified_at = datetime.utcnow()
+    
+    # Confirm registration
+    registration.registration_status = 'confirmed'
+    
+    db.session.commit()
+    
+    # Send SMS notification
+    student = Student.query.get(registration.student_id)
+    if student:
+        mock_send_sms(student.phone, registration.ticket_code)
+    
+    flash('Payment verified successfully! Student has been notified via SMS.', 'success')
+    return redirect(url_for('event_registrations', event_id=registration.event_id))
+
+@app.route('/admin/payments')
+def admin_payments():
+    if 'admin_id' not in session:
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('admin_login'))
+    
+    # Get all pending cash payments
+    pending_payments = db.session.query(Payment, Registration, Student, Event).join(Registration).join(Student).join(Event).filter(Payment.payment_status == 'pending', Payment.payment_method == 'cash').all()
+    
+    return render_template('admin_payments.html', pending_payments=pending_payments)
 
 @app.route('/admin/attendance', methods=['GET', 'POST'])
 def mark_attendance():

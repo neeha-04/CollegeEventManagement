@@ -35,13 +35,15 @@
                         <th>USN</th>
                         <th>Year/Semester</th>
                         <th>Contact</th>
+                        <th>Payment</th>
                         <th>Ticket Code</th>
                         <th>Registration Date</th>
                         <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for registration, student in registrations %}
+                    {% for registration, student, payment in registrations %}
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>
@@ -62,6 +64,18 @@
                             </div>
                         </td>
                         <td>
+                            {% if payment.amount == 0 %}
+                            <span class="badge bg-success">FREE</span>
+                            {% else %}
+                            <div>₹{{ payment.amount }}</div>
+                            <small class="text-muted">{{ payment.payment_method.title() }}</small>
+                            {% if payment.payment_method == 'online' and payment.transaction_id %}
+                            <br><small class="text-muted">ID: {{ payment.transaction_id }}</small>
+                            {% endif %}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
                             <code class="text-info">{{ registration.ticket_code }}</code>
                         </td>
                         <td>
@@ -75,11 +89,33 @@
                             </span>
                             <br>
                             <small class="text-muted">{{ registration.attendance[0].marked_at.strftime('%Y-%m-%d %H:%M') }}</small>
-                            {% else %}
+                            {% elif payment.payment_status == 'verified' %}
+                            <span class="badge bg-info">
+                                <i data-feather="check-circle" width="14" height="14" class="me-1"></i>
+                                Confirmed
+                            </span>
+                            {% elif payment.payment_status == 'pending' %}
                             <span class="badge bg-warning">
                                 <i data-feather="clock" width="14" height="14" class="me-1"></i>
-                                Registered
+                                Payment Pending
                             </span>
+                            {% else %}
+                            <span class="badge bg-secondary">
+                                <i data-feather="help-circle" width="14" height="14" class="me-1"></i>
+                                Unknown
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if payment.payment_status == 'pending' and payment.payment_method == 'cash' %}
+                            <a href="{{ url_for('verify_payment', payment_id=payment.id) }}" 
+                               class="btn btn-sm btn-success"
+                               onclick="return confirm('Confirm cash payment of ₹{{ payment.amount }} received from {{ student.name }}?')">
+                                <i data-feather="check"></i>
+                                Verify
+                            </a>
+                            {% else %}
+                            <span class="text-muted">-</span>
                             {% endif %}
                         </td>
                     </tr>
