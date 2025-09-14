@@ -44,6 +44,16 @@
                                 <i data-feather="award" class="me-2 text-success"></i>
                                 <small>Prize: {{ event.prize }}</small>
                             </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i data-feather="dollar-sign" class="me-2 text-info"></i>
+                                <small>
+                                    {% if event.registration_fee > 0 %}
+                                    Registration Fee: ₹{{ event.registration_fee }}
+                                    {% else %}
+                                    Registration: FREE
+                                    {% endif %}
+                                </small>
+                            </div>
                         </div>
 
                         <div class="accordion accordion-flush" id="accordion{{ event.id }}">
