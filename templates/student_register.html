@@ -66,12 +66,82 @@
 
                     <div class="mb-4">
                         <label for="event_id" class="form-label">Select Event</label>
-                        <select class="form-select" id="event_id" name="event_id" required>
-                            <option value="">Choose an event</option>
+                        <select class="form-select" id="event_id" name="event_id" required onchange="updateEventFee()">
+                            <option value="" data-fee="0">Choose an event</option>
                             {% for event in events %}
-                            <option value="{{ event.id }}">{{ event.name }} - {{ event.date }} at {{ event.venue }}</option>
+                            <option value="{{ event.id }}" data-fee="{{ event.registration_fee }}">{{ event.name }} - {{ event.date }} at {{ event.venue }} (Fee: ₹{{ event.registration_fee }})</option>
                             {% endfor %}
                         </select>
+                    </div>
+
+                    <!-- Fee Display -->
+                    <div class="alert alert-info" id="fee-info" style="display: none;">
+                        <h6 class="alert-heading">
+                            <i data-feather="dollar-sign" class="me-2"></i>
+                            Registration Fee
+                        </h6>
+                        <p class="mb-2">Event Fee: ₹<span id="selected-fee">0</span></p>
+                        <small>Payment is required to complete registration.</small>
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="mb-3" id="payment-section" style="display: none;">
+                        <label class="form-label">Payment Method</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="online_payment" value="online" onchange="togglePaymentFields()">
+                                    <label class="form-check-label" for="online_payment">
+                                        <i data-feather="smartphone" class="me-2"></i>
+                                        Online Payment (UPI/PhonePe/GPay)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="cash_payment" value="cash" onchange="togglePaymentFields()">
+                                    <label class="form-check-label" for="cash_payment">
+                                        <i data-feather="dollar-sign" class="me-2"></i>
+                                        Cash Payment (In Person)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Online Payment Details -->
+                    <div class="mb-3" id="online-payment-details" style="display: none;">
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">
+                                <i data-feather="smartphone" class="me-2"></i>
+                                Online Payment Instructions
+                            </h6>
+                            <p class="mb-2">1. Pay the registration fee using UPI to: <strong><span id="event-lead-phone">Event Lead Phone</span></strong></p>
+                            <p class="mb-2">2. Use UPI ID: <strong><span id="event-lead-phone-upi">Event Lead Phone</span>@paytm</strong> (or any UPI app)</p>
+                            <p class="mb-0">3. Enter the transaction ID below after payment</p>
+                        </div>
+                        <label for="transaction_id" class="form-label">Transaction ID / Reference Number</label>
+                        <input type="text" class="form-control" id="transaction_id" name="transaction_id" placeholder="Enter UPI transaction ID">
+                        <div class="form-text">Enter the transaction ID you received after making the payment</div>
+                    </div>
+
+                    <!-- Cash Payment Details -->
+                    <div class="mb-3" id="cash-payment-details" style="display: none;">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i data-feather="dollar-sign" class="me-2"></i>
+                                Cash Payment Instructions
+                            </h6>
+                            <p class="mb-2">1. Pay the registration fee in cash to the event coordinator: <strong><span id="event-lead-name">Event Lead</span></strong></p>
+                            <p class="mb-2">2. Contact: <strong><span id="event-lead-contact">Event Lead Phone</span></strong></p>
+                            <p class="mb-0">3. Your registration will be verified once payment is confirmed by admin</p>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cash_payment_confirm" name="cash_payment_confirm">
+                            <label class="form-check-label" for="cash_payment_confirm">
+                                I confirm that I have made the cash payment to the event coordinator
+                            </label>
+                        </div>
                     </div>
 
                     <div class="d-grid">
@@ -98,4 +168,115 @@
         </div>
     </div>
 </div>
+
+<script>
+function updateEventFee() {
+    const eventSelect = document.getElementById('event_id');
+    const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+    const fee = selectedOption.getAttribute('data-fee') || '0';
+    const feeInfo = document.getElementById('fee-info');
+    const paymentSection = document.getElementById('payment-section');
+    const selectedFee = document.getElementById('selected-fee');
+    
+    if (eventSelect.value && parseFloat(fee) > 0) {
+        selectedFee.textContent = fee;
+        feeInfo.style.display = 'block';
+        paymentSection.style.display = 'block';
+        
+        // Update event lead info for payment
+        updateEventLeadInfo();
+    } else if (eventSelect.value && parseFloat(fee) === 0) {
+        feeInfo.innerHTML = '<div class="alert alert-success"><h6><i data-feather="check-circle" class="me-2"></i>Free Event</h6><p class="mb-0">No registration fee required for this event.</p></div>';
+        feeInfo.style.display = 'block';
+        paymentSection.style.display = 'none';
+        resetPaymentFields();
+    } else {
+        feeInfo.style.display = 'none';
+        paymentSection.style.display = 'none';
+        resetPaymentFields();
+    }
+    
+    // Refresh feather icons
+    feather.replace();
+}
+
+function updateEventLeadInfo() {
+    const eventSelect = document.getElementById('event_id');
+    const events = {{ events | tojson | safe }};
+    const selectedEvent = events.find(event => event.id == eventSelect.value);
+    
+    if (selectedEvent) {
+        document.getElementById('event-lead-phone').textContent = selectedEvent.lead_phone;
+        document.getElementById('event-lead-phone-upi').textContent = selectedEvent.lead_phone;
+        document.getElementById('event-lead-name').textContent = selectedEvent.lead_name;
+        document.getElementById('event-lead-contact').textContent = selectedEvent.lead_phone;
+    }
+}
+
+function togglePaymentFields() {
+    const onlinePayment = document.getElementById('online_payment');
+    const cashPayment = document.getElementById('cash_payment');
+    const onlineDetails = document.getElementById('online-payment-details');
+    const cashDetails = document.getElementById('cash-payment-details');
+    const transactionId = document.getElementById('transaction_id');
+    const cashConfirm = document.getElementById('cash_payment_confirm');
+    
+    if (onlinePayment.checked) {
+        onlineDetails.style.display = 'block';
+        cashDetails.style.display = 'none';
+        transactionId.required = true;
+        cashConfirm.required = false;
+    } else if (cashPayment.checked) {
+        onlineDetails.style.display = 'none';
+        cashDetails.style.display = 'block';
+        transactionId.required = false;
+        cashConfirm.required = true;
+    }
+    
+    // Refresh feather icons
+    feather.replace();
+}
+
+function resetPaymentFields() {
+    document.getElementById('online_payment').checked = false;
+    document.getElementById('cash_payment').checked = false;
+    document.getElementById('online-payment-details').style.display = 'none';
+    document.getElementById('cash-payment-details').style.display = 'none';
+    document.getElementById('transaction_id').required = false;
+    document.getElementById('cash_payment_confirm').required = false;
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const eventSelect = document.getElementById('event_id');
+    const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+    const fee = parseFloat(selectedOption.getAttribute('data-fee') || '0');
+    
+    if (fee > 0) {
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+        if (!paymentMethod) {
+            e.preventDefault();
+            alert('Please select a payment method.');
+            return;
+        }
+        
+        if (paymentMethod.value === 'online') {
+            const transactionId = document.getElementById('transaction_id').value;
+            if (!transactionId.trim()) {
+                e.preventDefault();
+                alert('Please enter the transaction ID for online payment.');
+                return;
+            }
+        } else if (paymentMethod.value === 'cash') {
+            const cashConfirm = document.getElementById('cash_payment_confirm');
+            if (!cashConfirm.checked) {
+                e.preventDefault();
+                alert('Please confirm that you have made the cash payment.');
+                return;
+            }
+        }
+    }
+});
+</script>
+
 {% endblock %}

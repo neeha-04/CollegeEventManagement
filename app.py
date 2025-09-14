@@ -152,6 +152,9 @@ def student_register():
         phone = request.form.get('phone')
         email = request.form.get('email')
         event_id = request.form.get('event_id')
+        payment_method = request.form.get('payment_method')
+        transaction_id = request.form.get('transaction_id', '').strip()
+        cash_payment_confirm = request.form.get('cash_payment_confirm')
         
         # Validate required fields
         if not all([name, usn_raw, year, semester, phone, email, event_id]):
@@ -164,6 +167,26 @@ def student_register():
         if not usn.startswith('1KS'):
             flash('USN must start with "1KS"', 'error')
             return render_template('student_register.html', events=Event.query.all())
+        
+        # Get event details and fee
+        event = Event.query.get(event_id)
+        if not event:
+            flash('Selected event not found!', 'error')
+            return render_template('student_register.html', events=Event.query.all())
+        
+        # Check if payment is required
+        if event.registration_fee > 0:
+            if not payment_method:
+                flash('Payment method is required for this event!', 'error')
+                return render_template('student_register.html', events=Event.query.all())
+            
+            if payment_method == 'online' and not transaction_id:
+                flash('Transaction ID is required for online payment!', 'error')
+                return render_template('student_register.html', events=Event.query.all())
+            
+            if payment_method == 'cash' and not cash_payment_confirm:
+                flash('Please confirm cash payment to proceed!', 'error')
+                return render_template('student_register.html', events=Event.query.all())
         
         # Check if student already exists
         student = Student.query.filter_by(usn=usn).first()
@@ -185,6 +208,25 @@ def student_register():
             flash('You are already registered for this event!', 'error')
             return render_template('student_register.html', events=Event.query.all())
         
+        # Create payment record
+        if event.registration_fee > 0:
+            payment = Payment(
+                payment_method=payment_method,
+                transaction_id=transaction_id if payment_method == 'online' else None,
+                amount=event.registration_fee,
+                payment_status='verified' if payment_method == 'online' and transaction_id else 'pending'
+            )
+        else:
+            # For free events
+            payment = Payment(
+                payment_method='free',
+                amount=0.0,
+                payment_status='verified'
+            )
+        
+        db.session.add(payment)
+        db.session.commit()
+        
         # Generate unique ticket code
         ticket_code = str(uuid.uuid4())[:8].upper()
         
@@ -192,19 +234,28 @@ def student_register():
         blockchain_hash = simulate_blockchain_store(ticket_code, student.id, event_id)
         
         # Create registration
+        registration_status = 'confirmed' if payment.payment_status == 'verified' else 'pending'
         registration = Registration(
             student_id=student.id,
             event_id=int(event_id),
+            payment_id=payment.id,
             ticket_code=ticket_code,
-            blockchain_hash=blockchain_hash
+            blockchain_hash=blockchain_hash,
+            registration_status=registration_status
         )
         db.session.add(registration)
         db.session.commit()
         
-        # Mock SMS sending
-        mock_send_sms(phone, ticket_code)
+        # Send SMS only for confirmed registrations
+        if registration_status == 'confirmed':
+            mock_send_sms(phone, ticket_code)
+            if event.registration_fee > 0:
+                flash(f'Payment verified! Registration confirmed. Your ticket code is: {ticket_code}', 'success')
+            else:
+                flash(f'Registration successful! Your ticket code is: {ticket_code}', 'success')
+        else:
+            flash(f'Registration submitted! Your registration will be confirmed once payment is verified by admin. Ticket code: {ticket_code}', 'warning')
         
-        flash(f'Registration successful! Your ticket code is: {ticket_code}', 'success')
         return redirect(url_for('events'))
     
     events = Event.query.all()
