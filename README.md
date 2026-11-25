@@ -1,135 +1,118 @@
-# College Event Management System (CEM)
+# 🎓 College Event Management System
 
-A web application for managing college events. Students can browse upcoming events and register for them, and administrators can create, update and manage events from a dashboard.
+A Flask web application for managing college technical events. Students can browse events, register online and get a unique ticket code by SMS. Admins can manage events, check payments and mark attendance using blockchain-verified tickets.
 
-**Live demo:** https://neeha.pythonanywhere.com
+Built for **K. S. Institute of Technology (KSIT), Bengaluru**. Only students with a USN starting with `1KS` can register.
+
+🔗 **Live demo:** [neeha.pythonanywhere.com](https://neeha.pythonanywhere.com)
 
 ---
 
-## Features
+## ✨ Features
 
-- Browse upcoming college events with date, venue and description
-- Student registration for events with email validation
-- Admin login with a dashboard to add, edit and delete events
-- View registrations for each event
-- Session-based authentication
-- SQLite database managed through SQLAlchemy
+### Students
+- View all events with date, time, venue, prize pool, fee, rules and coordinator contact
+- Event timetable with important notes for participants
+- Registration form with USN check (`1KS...`), email check and one registration per event
+- Pay by UPI (with transaction ID) or cash (verified by an admin)
+- Unique ticket code sent by SMS, used for attendance
 
-## Tech Stack
+### Admins
+- Secure admin login
+- Add and manage events
+- View registrations and verify payments
+- Mark attendance by checking ticket codes
+- Tamper-proof tickets secured with a SHA-256 hash chain
 
-| Layer      | Technology                         |
-|------------|------------------------------------|
-| Backend    | Python, Flask                      |
-| Database   | SQLite, Flask-SQLAlchemy           |
-| Frontend   | HTML, CSS, Jinja2 templates        |
-| Validation | email-validator                    |
-| Hosting    | PythonAnywhere                     |
+---
 
-## Project Structure
+## 🧰 Tech Stack
+
+| Layer     | Technology                     |
+|-----------|--------------------------------|
+| Backend   | Python, Flask                  |
+| Database  | SQLite, Flask-SQLAlchemy       |
+| Frontend  | HTML, CSS, JavaScript, Jinja2  |
+| Security  | Blockchain-style hashed tickets, Flask sessions |
+| Hosting   | PythonAnywhere                 |
+
+---
+
+## 🗺️ Pages
+
+| Route          | Description                                   |
+|----------------|-----------------------------------------------|
+| `/`            | Home page                                     |
+| `/events`      | All events with details and rules             |
+| `/timetable`   | Date-wise event schedule                      |
+| `/register`    | Student registration and payment              |
+| `/admin/login` | Admin login and dashboard                     |
+
+---
+
+## 📁 Project Structure
 
 ```
-CEM/
-├── app.py          # Flask app, models and routes
-├── main.py         # Local entry point
-├── init_db.py      # Creates the database, admin account and sample events
-├── templates/      # Jinja2 HTML templates
-├── static/         # CSS, JS and images
+CollegeEventManagement/
+├── app.py         # Flask app, models and routes
+├── main.py        # Entry point for running locally
+├── init_db.py     # Creates the database, admin account and sample events
+├── templates/     # HTML templates
+├── static/        # CSS, JS and images
 └── README.md
 ```
 
-## Getting Started (Local Setup)
+---
 
-### Prerequisites
+## 💻 Run Locally
 
-- Python 3.10 or later
-- pip
+```bash
+git clone https://github.com/neeha-04/CollegeEventManagement.git
+cd CollegeEventManagement
 
-### Installation
+python -m venv venv
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # macOS / Linux
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/<your-username>/CEM.git
-   cd CEM
-   ```
+pip install flask flask-sqlalchemy email-validator
 
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   # Windows
-   venv\Scripts\activate
-   # macOS / Linux
-   source venv/bin/activate
-   ```
+set SESSION_SECRET=any-random-string        # Windows
+# export SESSION_SECRET=any-random-string   # macOS / Linux
 
-3. Install dependencies:
-   ```bash
-   pip install flask flask-sqlalchemy email-validator
-   ```
+python init_db.py
+python main.py
+```
 
-4. Set the session secret:
-   ```bash
-   # Windows (PowerShell)
-   $env:SESSION_SECRET="any-random-string"
-   # macOS / Linux
-   export SESSION_SECRET=any-random-string
-   ```
+Open **http://127.0.0.1:5000** in your browser.
 
-5. Initialise the database:
-   ```bash
-   python init_db.py
-   ```
-   This creates the database, a default admin account and 4 sample events.
+**Demo admin login:** `admin` / `admin123`
 
-6. Run the app:
-   ```bash
-   python main.py
-   ```
-   Open http://127.0.0.1:5000 in your browser.
+---
 
-### Default Admin Login
+## 🚀 Deployment
 
-| Username | Password   |
-|----------|------------|
-| admin    | admin123   |
+The app is hosted on **PythonAnywhere** using a manual WSGI configuration:
 
-> Change the default admin password before using this in a real setting.
+```python
+import sys, os
+sys.path.insert(0, '/home/<username>/CollegeEventManagement')
+os.environ['SESSION_SECRET'] = 'any-long-random-string'
+from app import app as application
+```
 
-## Deployment (PythonAnywhere)
+---
 
-1. Open a Bash console and clone the repo into `/home/<username>/CEM`.
-2. Create a virtualenv and install the dependencies listed above.
-3. Run `python init_db.py` once.
-4. In the **Web** tab, add a new web app with **Manual configuration** (Python 3.12).
-5. Set **Source code** and **Working directory** to `/home/<username>/CEM`, and **Virtualenv** to your virtualenv path.
-6. Replace the contents of the WSGI file with:
-   ```python
-   import sys, os
-   sys.path.insert(0, '/home/<username>/CEM')
-   os.environ['SESSION_SECRET'] = 'any-long-random-string'
-   from app import app as application
-   ```
-7. Click **Reload** and open `https://<username>.pythonanywhere.com`.
+## 🔮 Future Enhancements
 
-Free PythonAnywhere apps must be renewed once a month from the Web tab (**Run until 1 month from today**) or they are disabled.
+- Razorpay payment gateway
+- QR-code tickets
+- Export registrations to Excel
+- Automatic participation certificates
 
-## Environment Variables
+---
 
-| Variable         | Purpose                                 |
-|------------------|-----------------------------------------|
-| `SESSION_SECRET` | Secret key used to sign Flask sessions  |
-
-## Future Improvements
-
-- Email notifications for event registrations
-- Event categories, search and filters
-- Export registrations to CSV
-- Role-based access for event coordinators
-
-## Author
+## 👩‍💻 Author
 
 **Neeharika Shakthivelan**
-B.E. Computer Science and Engineering (ICB), K. S. Institute of Technology, Bengaluru
-
-## License
-
-This project was built for academic purposes. Feel free to use it for learning.
+B.E. Computer Science and Engineering (ICB), KSIT Bengaluru
+GitHub: [@neeha-04](https://github.com/neeha-04)
